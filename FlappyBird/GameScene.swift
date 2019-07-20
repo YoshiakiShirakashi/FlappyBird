@@ -289,7 +289,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         // 鳥の画像サイズを取得
         let birdSize = SKTexture(imageNamed: "bird_a").size()
 
-        let hendou_y_range = birdSize.height * 4
+        let hendou_y_range = birdSize.height * 3.5
         let slit_length = birdSize.height * 3
         
         // 地面サイズを取得
@@ -302,11 +302,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         {
             let fairy = SKNode()
             fairy.position = CGPoint(x: self.frame.size.width / 2 , y: fairyTexture.size().height / 2 )
+
             // 壁より手前に表示
             fairy.zPosition = -40
             
             let random_y = CGFloat.random(in: 0..<hendou_y_range)
+            
             let Fairy = SKSpriteNode(texture: fairyTexture)
+            
             let under_wall_y = fairy_lowest_y + random_y
 
             Fairy.position = CGPoint(x: 0, y: under_wall_y)
@@ -317,12 +320,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             fairy.addChild(Fairy)
             
             fairy.run(fairyAnimation)
+            
             self.fairyNode.addChild(fairy)
             }
         )
         
-        let waitAnimation = SKAction.wait(forDuration: 5)
+        let waitAnimation = SKAction.wait(forDuration: 3)
         let cycleAnimation = SKAction.repeatForever(SKAction.sequence([runFairyAnimation, waitAnimation]))
+        
         fairyNode.run(cycleAnimation)
     }
     

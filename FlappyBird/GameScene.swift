@@ -13,18 +13,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var scrollNode:SKNode!
     var wallNode:SKNode!
     var bird:SKSpriteNode!
+    var fairyNode:SKNode!
     
     // 衝突判定カテゴリー
     let birdCategory: UInt32 = 1 << 0       // 0...00001
     let groundCategory: UInt32 = 1 << 1     // 0...00010
     let wallCategory: UInt32 = 1 << 2       // 0...00100
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
+    let fairyCategory: UInt32 = 1 << 4      // 0...10000
     
     // スコア用
     var score = 0
     var scoreLabelNode:SKLabelNode!
+    var itemScore = 0
+    var itemScoreNode:SKLabelNode!
     var bestScoreLabelNode:SKLabelNode!
+    
+    // 記憶領域設定
     let userDefaults:UserDefaults = UserDefaults.standard
+    
+    // 効果音（先に読み込み初回再生遅延を避ける）
+    let sound = SKAction.playSoundFileNamed("pika.mp3", waitForCompletion: false)
     
     // SKView上にシーンが表示されたときに呼ばれるメソッド
     override func didMove(to view: SKView) {
@@ -39,6 +48,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         scrollNode = SKNode()
         addChild(scrollNode)
         
+        // アイテム用のノード
+        fairyNode = SKNode()
+        scrollNode.addChild(fairyNode)
+        
         // 壁用のノード
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
@@ -50,6 +63,56 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         setupBird()
         
         setupScoreLabel()
+        
+        setupFairy()
+        setupItemScoreLabel()
+    }
+    
+    func setupFairy() { //アイテムの設定
+        // 妖精の画像を取り込む
+        let fairyTexture = SKTexture(imageNamed: "fairy")
+        fairyTexture.filteringMode = .linear
+        
+        let movingDistance = CGFloat(self.frame.size.width + fairyTexture.size().width)
+        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 5) //多少逃げ気味に設定
+        let removeFairy = SKAction.removeFromParent()
+        let fairyAnimation = SKAction.sequence([moveFairy, removeFairy])
+        
+        // 鳥の画像サイズを取得
+        let birdSize = SKTexture(imageNamed: "bird_a").size()
+        // 上下壁の間の長さを取得
+        let slit_length = birdSize.height * 3
+        let hendou_y_range = birdSize.height * 2
+        
+        // 地面サイズを取得
+        let groundSize = SKTexture(imageNamed: "ground").size()
+        let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
+        let fairy_lowest_y = center_y - slit_length / 2 - fairyTexture.size().height / 2 - hendou_y_range / 2
+        
+        let createFairyAnimation = SKAction.run (
+        {
+            let fairy = SKNode()
+            fairy.position = CGPoint(x: self.frame.size.width + fairyTexture.size().width / 2, y: 0)
+            // 壁より手前に表示
+            fairy.zPosition = -40
+            let random_y = CGFloat.random(in: 0..<hendou_y_range)
+            let under_wall_y = fairy_lowest_y + random_y
+            let Funder = SKSpriteNode(texture: fairyTexture)
+            Funder.position = CGPoint(x: 0, y: under_wall_y)
+            Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
+            Funder.physicsBody?.categoryBitMask = self.fairyCategory
+            Funder.physicsBody?.isDynamic = false
+            
+            fairy.addChild(Funder)
+            
+            fairy.run(fairyAnimation)
+            self.fairyNode.addChild(fairy)
+        }
+        )
+        
+        let waitAnimation = SKAction.wait(forDuration: 5)
+        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
+        fairyNode.run(repeatForeverAnimation)
     }
     
     func setupGround() {
@@ -133,7 +196,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             scrollNode.addChild(sprite)
         }
     }
-    
+
     func setupWall() {
         // 壁の画像を読み込む
         let wallTexture = SKTexture(imageNamed: "wall")
@@ -250,8 +313,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         
         // 衝突のカテゴリー設定
         bird.physicsBody?.categoryBitMask = birdCategory
-        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
-        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory | fairyCategory
+        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | fairyCategory
         
         // アニメーションを設定
         bird.run(flap)
@@ -280,7 +343,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         bestScoreLabelNode.text = "Best Score:\(bestScore)"
         self.addChild(bestScoreLabelNode)
     }
-    
+    func setupItemScoreLabel() {
+        itemScore = 0
+        itemScoreNode = SKLabelNode()
+        itemScoreNode.fontColor = UIColor.black
+        itemScoreNode.position = CGPoint(x: 10, y: self.frame.size.height - 130)
+        itemScoreNode.zPosition = 100 // 一番手前に表示する
+        itemScoreNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        itemScoreNode.text = "Item Score:\(itemScore)"
+        self.addChild(itemScoreNode)
+    }
     // 画面をタップした時に呼ばれる
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if scrollNode.speed > 0 {
@@ -314,6 +386,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 userDefaults.set(bestScore, forKey: "BEST")
                 userDefaults.synchronize()
             }
+            
+        }  else if (contact.bodyA.categoryBitMask & fairyCategory) == fairyCategory || (contact.bodyB.categoryBitMask & fairyCategory) == fairyCategory {
+                // 妖精と衝突した
+                print("ItemScoreUp")
+                itemScore += 1
+                itemScoreNode.text = "Item Score:\(itemScore)"
+                self.fairyNode.removeAllChildren()
+                run(sound)
+            
         } else {
             // 壁か地面と衝突した
             print("GameOver")
@@ -329,9 +410,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             })
         }
     }
+    
     func restart() {
         score = 0
+        itemScore = 0
         scoreLabelNode.text = String("Score:\(score)")
+        itemScoreNode.text = String("ItemScore:\(itemScore)")
         
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
@@ -339,9 +423,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         bird.zRotation = 0
         
         wallNode.removeAllChildren()
+        fairyNode.removeAllChildren()
         
         bird.speed = 1
         scrollNode.speed = 1
     }
 }
-

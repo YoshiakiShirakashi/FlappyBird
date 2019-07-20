@@ -282,7 +282,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         fairyTexture.filteringMode = .linear
         
         let movingDistance = CGFloat(self.frame.size.width + fairyTexture.size().width)
-        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 4.2)
+        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 30, duration: 4.2)
         let removeFairy = SKAction.removeFromParent()
         let fairyAnimation = SKAction.sequence([moveFairy, removeFairy])
         
@@ -301,14 +301,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let createFairyAnimation = SKAction.run (
         {
             let fairy = SKNode()
-            fairy.position = CGPoint(x: self.frame.size.width + fairyTexture.size().width / 2, y: 0)
+            fairy.position = CGPoint(x: self.frame.size.width / 2 , y: fairyTexture.size().height / 2 )
             // 壁より手前に表示
             fairy.zPosition = -40
             
             let random_y = CGFloat.random(in: 0..<hendou_y_range)
             let under_wall_y = fairy_lowest_y + random_y
             let Funder = SKSpriteNode(texture: fairyTexture)
-            
+
             Funder.position = CGPoint(x: 0, y: under_wall_y)
             Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
             Funder.physicsBody?.categoryBitMask = self.fairyCategory

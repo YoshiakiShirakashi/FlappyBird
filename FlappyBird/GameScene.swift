@@ -68,53 +68,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         setupItemScoreLabel()
     }
     
-    func setupFairy() { //アイテムの設定
-        // 妖精の画像を取り込む
-        let fairyTexture = SKTexture(imageNamed: "fairy")
-        fairyTexture.filteringMode = .linear
-        
-        let movingDistance = CGFloat(self.frame.size.width + fairyTexture.size().width)
-        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 5) //多少逃げ気味に設定
-        let removeFairy = SKAction.removeFromParent()
-        let fairyAnimation = SKAction.sequence([moveFairy, removeFairy])
-        
-        // 鳥の画像サイズを取得
-        let birdSize = SKTexture(imageNamed: "bird_a").size()
-        // 上下壁の間の長さを取得
-        let slit_length = birdSize.height * 3
-        let hendou_y_range = birdSize.height * 2
-        
-        // 地面サイズを取得
-        let groundSize = SKTexture(imageNamed: "ground").size()
-        let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
-        let fairy_lowest_y = center_y - slit_length / 2 - fairyTexture.size().height / 2 - hendou_y_range / 2
-        
-        let createFairyAnimation = SKAction.run (
-        {
-            let fairy = SKNode()
-            fairy.position = CGPoint(x: self.frame.size.width + fairyTexture.size().width / 2, y: 0)
-            // 壁より手前に表示
-            fairy.zPosition = -40
-            let random_y = CGFloat.random(in: 0..<hendou_y_range)
-            let under_wall_y = fairy_lowest_y + random_y
-            let Funder = SKSpriteNode(texture: fairyTexture)
-            Funder.position = CGPoint(x: 0, y: under_wall_y)
-            Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
-            Funder.physicsBody?.categoryBitMask = self.fairyCategory
-            Funder.physicsBody?.isDynamic = false
-            
-            fairy.addChild(Funder)
-            
-            fairy.run(fairyAnimation)
-            self.fairyNode.addChild(fairy)
-        }
-        )
-        
-        let waitAnimation = SKAction.wait(forDuration: 5)
-        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
-        fairyNode.run(repeatForeverAnimation)
-    }
-    
     func setupGround() {
         // 地面の画像を読み込む
         let groundTexture = SKTexture(imageNamed: "ground")
@@ -321,6 +274,52 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         
         // スプライトを追加する
         addChild(bird)
+    }
+    func setupFairy() { //アイテムの設定
+        // 妖精の画像を取り込む
+        let fairyTexture = SKTexture(imageNamed: "fairy")
+        fairyTexture.filteringMode = .linear
+        
+        let movingDistance = CGFloat(self.frame.size.width + fairyTexture.size().width)
+        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 5) //多少逃げ気味に設定
+        let removeFairy = SKAction.removeFromParent()
+        let fairyAnimation = SKAction.sequence([moveFairy, removeFairy])
+        
+        // 鳥の画像サイズを取得
+        let birdSize = SKTexture(imageNamed: "bird_a").size()
+        // 上下壁の間の長さを取得
+        let slit_length = birdSize.height * 3
+        let hendou_y_range = birdSize.height * 2
+        
+        // 地面サイズを取得
+        let groundSize = SKTexture(imageNamed: "ground").size()
+        let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
+        let fairy_lowest_y = center_y - slit_length / 2 - fairyTexture.size().height / 2 - hendou_y_range / 2
+        
+        let createFairyAnimation = SKAction.run (
+        {
+            let fairy = SKNode()
+            fairy.position = CGPoint(x: self.frame.size.width + fairyTexture.size().width / 2, y: 0)
+            // 壁より手前に表示
+            fairy.zPosition = -40
+            let random_y = CGFloat.random(in: 0..<hendou_y_range)
+            let under_wall_y = fairy_lowest_y + random_y
+            let Funder = SKSpriteNode(texture: fairyTexture)
+            Funder.position = CGPoint(x: 0, y: under_wall_y)
+            Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
+            Funder.physicsBody?.categoryBitMask = self.fairyCategory
+            Funder.physicsBody?.isDynamic = false
+            
+            fairy.addChild(Funder)
+            
+            fairy.run(fairyAnimation)
+            self.fairyNode.addChild(fairy)
+            }
+        )
+        
+        let waitAnimation = SKAction.wait(forDuration: 5)
+        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
+        fairyNode.run(repeatForeverAnimation)
     }
     
     func setupScoreLabel() {

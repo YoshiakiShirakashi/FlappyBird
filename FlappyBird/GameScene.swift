@@ -342,6 +342,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         bestScoreLabelNode.text = "Best Score:\(bestScore)"
         self.addChild(bestScoreLabelNode)
     }
+    
     func setupItemScoreLabel() {
         itemScore = 0
         itemScoreNode = SKLabelNode()

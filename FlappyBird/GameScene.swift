@@ -171,6 +171,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let birdSize = SKTexture(imageNamed: "bird_a").size()
         
         // 鳥が通り抜ける隙間の長さを鳥のサイズの3倍とする
+        
         let slit_length = birdSize.height * 3
         
         // 隙間位置の上下の振れ幅を鳥のサイズの3倍とする
@@ -275,24 +276,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         // スプライトを追加する
         addChild(bird)
     }
-    func setupFairy() { //アイテムの設定
+    func setupFairy() { //アイテム（妖精）の設定
         // 妖精の画像を取り込む
         let fairyTexture = SKTexture(imageNamed: "fairy")
         fairyTexture.filteringMode = .linear
         
         let movingDistance = CGFloat(self.frame.size.width + fairyTexture.size().width)
-        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 5) //多少逃げ気味に設定
+        let moveFairy = SKAction.moveBy(x: -movingDistance, y: 0, duration: 4.2)
         let removeFairy = SKAction.removeFromParent()
         let fairyAnimation = SKAction.sequence([moveFairy, removeFairy])
         
         // 鳥の画像サイズを取得
         let birdSize = SKTexture(imageNamed: "bird_a").size()
-        // 上下壁の間の長さを取得
+
+        let hendou_y_range = birdSize.height * 4
         let slit_length = birdSize.height * 3
-        let hendou_y_range = birdSize.height * 2
         
         // 地面サイズを取得
         let groundSize = SKTexture(imageNamed: "ground").size()
+
         let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
         let fairy_lowest_y = center_y - slit_length / 2 - fairyTexture.size().height / 2 - hendou_y_range / 2
         
@@ -302,9 +304,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             fairy.position = CGPoint(x: self.frame.size.width + fairyTexture.size().width / 2, y: 0)
             // 壁より手前に表示
             fairy.zPosition = -40
+            
             let random_y = CGFloat.random(in: 0..<hendou_y_range)
             let under_wall_y = fairy_lowest_y + random_y
             let Funder = SKSpriteNode(texture: fairyTexture)
+            
             Funder.position = CGPoint(x: 0, y: under_wall_y)
             Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
             Funder.physicsBody?.categoryBitMask = self.fairyCategory

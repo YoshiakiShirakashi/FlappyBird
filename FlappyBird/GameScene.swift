@@ -322,8 +322,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         )
         
         let waitAnimation = SKAction.wait(forDuration: 5)
-        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
-        fairyNode.run(repeatForeverAnimation)
+        let repeatAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
+        fairyNode.run(repeatAnimation)
     }
     
     func setupScoreLabel() {
@@ -397,6 +397,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 itemScore += 1
                 itemScoreNode.text = "Item Score:\(itemScore)"
                 self.fairyNode.removeAllChildren()
+                // 音を鳴らす
                 run(sound)
             
         } else {

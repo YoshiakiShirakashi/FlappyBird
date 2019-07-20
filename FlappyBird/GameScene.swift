@@ -298,7 +298,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let center_y = groundSize.height + (self.frame.size.height - groundSize.height) / 2
         let fairy_lowest_y = center_y - slit_length / 2 - fairyTexture.size().height / 2 - hendou_y_range / 2
         
-        let createFairyAnimation = SKAction.run (
+        let runFairyAnimation = SKAction.run (
         {
             let fairy = SKNode()
             fairy.position = CGPoint(x: self.frame.size.width / 2 , y: fairyTexture.size().height / 2 )
@@ -306,15 +306,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             fairy.zPosition = -40
             
             let random_y = CGFloat.random(in: 0..<hendou_y_range)
+            let Fairy = SKSpriteNode(texture: fairyTexture)
             let under_wall_y = fairy_lowest_y + random_y
-            let Funder = SKSpriteNode(texture: fairyTexture)
 
-            Funder.position = CGPoint(x: 0, y: under_wall_y)
-            Funder.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
-            Funder.physicsBody?.categoryBitMask = self.fairyCategory
-            Funder.physicsBody?.isDynamic = false
+            Fairy.position = CGPoint(x: 0, y: under_wall_y)
+            Fairy.physicsBody = SKPhysicsBody(rectangleOf: fairyTexture.size())
+            Fairy.physicsBody?.categoryBitMask = self.fairyCategory
+            Fairy.physicsBody?.isDynamic = false
             
-            fairy.addChild(Funder)
+            fairy.addChild(Fairy)
             
             fairy.run(fairyAnimation)
             self.fairyNode.addChild(fairy)
@@ -322,8 +322,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         )
         
         let waitAnimation = SKAction.wait(forDuration: 5)
-        let repeatAnimation = SKAction.repeatForever(SKAction.sequence([createFairyAnimation, waitAnimation]))
-        fairyNode.run(repeatAnimation)
+        let cycleAnimation = SKAction.repeatForever(SKAction.sequence([runFairyAnimation, waitAnimation]))
+        fairyNode.run(cycleAnimation)
     }
     
     func setupScoreLabel() {
